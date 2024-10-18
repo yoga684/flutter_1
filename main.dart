@@ -34,7 +34,12 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   //state MyAppState diisi dengan 2 kata rendom yang digabung. kata rendom tsb disimpan di variable WordPair
   var current = WordPair.random();
+  void getNext() {
+    current = WordPair.random();
+    notifyListeners();
+  }
 }
+
 
 class MyHomePage extends StatelessWidget {
   @override
@@ -48,11 +53,11 @@ class MyHomePage extends StatelessWidget {
           Text('A random idea:'),
           Text(appState.current.asLowerCase),//mengambil random texs dari appstate pada variabel wordpair current, lalu diubah menjdi huruf kecil semua, dan di tampilkan sebagai teks
        ElevatedButton(
-            onPressed: () {
-              print('button pressed!');//tampilakan teks 'button pressed' di terminal saat button di tekan
-            },
-            child: Text('Next'),//berikan teks 'next' pada button
-       )
+      onPressed: () {
+        appState.getNext();  // ← This instead of print().
+      },
+      child: Text('Next'),
+    ),
         ],
       ),
     );
