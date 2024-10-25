@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           //data tema aplikasi
           useMaterial3: true, //versi material ui yang dipakai versi 3
-          colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 225, 2, 255)), //
+          colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 227, 159, 13)), //
         ),
         home:
             MyHomePage(), //nama halaman "myhomepage" yang menggunakan state "myappstate"
@@ -41,45 +41,130 @@ class MyAppState extends ChangeNotifier {
   //state MyAppState diisi dengan 2 kata rendom yang digabung. kata rendom tsb disimpan di variable WordPair
   var current = WordPair.random();
   void getNext() {
-    current = WordPair.random();
+    current = WordPair.random();//untuk manampilkan kata rendom bahasa inggris
+    notifyListeners();//menampilkan fungsi ini ke button
+  }
+  var favorites = <WordPair>[];
+ //fungsi untuk menambahkan kata kedalam atau menghapus kata dari list favotites
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
+      favorites.remove(current);//untuk menghapus kata
+    } else {
+      favorites.add(current);//untuk menambahkan kata
+    }
     notifyListeners();
   }
 }
 
-class MyHomePage extends StatelessWidget {
+
+
+// ...
+
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    var appState =
-        context.watch<MyAppState>(); //widget menggunakan state MyAppState
-    var pair =
-        appState.current; //var pair menyimpan kata yang sedang tampil/aktif
+    Widget page;
+switch (selectedIndex) {
+  case 0:
+    page = GeneratorPage();
+    break;
+  case 1:
+    page = Placeholder();
+    break;
+  default:
+    throw UnimplementedError('no widget for $selectedIndex');
+}
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  extended: constraints.maxWidth >= 600,
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,    
+                  onDestinationSelected: (value) {
+                  setState(() {
+                      selectedIndex = value;
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: GeneratorPage(),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+}
 
-//kode program untuk menyusun layout
-    return Scaffold(
-      //canvas dari layout
-      body: Center(
-        child: Column(
-          //diatas scaffold, ada body. bodynya diberi colum
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //sesuatu yang di dalam body
-          
-            BigCard(//widget bigcard
-                pair:
-                    pair), //mengambil pada variabel pair, lalu diubah menjdi huruf kecil semua, dan di tampilkan sebagai teks kecil
-            ElevatedButton(
-              onPressed: () {
-                appState.getNext(); // ← This instead of print().
-              },
-              child: Text('rowrrr'),
-            ),
-          ],
-        ),
+class GeneratorPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var pair = appState.current;
+
+    IconData icon;
+    if (appState.favorites.contains(pair)) {
+      icon = Icons.favorite;
+    } else {
+      icon = Icons.favorite_border;
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),//untuk membuat tampilan text lebih besar
+          SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: Text('Like'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
+// ...
 class BigCard extends StatelessWidget {
   const BigCard({
     super.key,
